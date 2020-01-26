@@ -17,6 +17,7 @@ int
 sys_exit(void)
 {
   int stat;
+  argint(0, stat);
   exit(stat);
   return 0;  // not reached
 }
