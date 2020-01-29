@@ -16,9 +16,7 @@ sys_fork(void)
 int
 sys_exit(void)
 {
-  int stat;
-  argint(0, stat);
-  exit(stat);
+  exit(0);
   return 0;  // not reached
 }
 
