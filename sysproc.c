@@ -27,6 +27,15 @@ sys_wait(void)
 }
 
 int
+sys_waitpid(void){
+   int pid;
+   int* status;
+   if(argptr(1, (void*), &status, sizeof(*status)) < 0){
+   	return  -1;
+   return waitpid(pid, status, 0);
+}
+
+int
 sys_kill(void)
 {
   int pid;
@@ -87,5 +96,5 @@ sys_uptime(void)
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
-  return xticks;
+  return xtickst;
 }
