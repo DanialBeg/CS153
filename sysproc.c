@@ -16,22 +16,27 @@ sys_fork(void)
 int
 sys_exit(void)
 {
-  exit(0);
+  int stat;
+  argint(0, &stat);
+  exit(stat);
   return 0;  // not reached
 }
 
 int
 sys_wait(void)
 {
-  return wait(0);
+  int* stat;
+  argptr(0, (char**)&stat, 0);
+  return wait(stat);
 }
 
 int
-sys_waitpid(void){
+sys_waitpid(void)
+{
    int pid;
+   argint(0, &pid);
    int* status;
-   if(argptr(1, (void*), &status, sizeof(*status)) < 0){
-   	return  -1;
+   argptr(1, (char**)&status, 0);
    return waitpid(pid, status, 0);
 }
 
@@ -91,10 +96,10 @@ sys_sleep(void)
 int
 sys_uptime(void)
 {
-  uint xticks;
+   uint xticks;
 
-  acquire(&tickslock);
-  xticks = ticks;
-  release(&tickslock);
-  return xtickst;
+   acquire(&tickslock);
+   xticks = ticks;
+   release(&tickslock);
+   return xticks;
 }

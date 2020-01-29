@@ -290,7 +290,9 @@ wait(int *stat)
         // Found one.
 	if(stat){
 		*stat = p->exitStatus;
-        pid = p->pid;
+       
+	}
+	pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
         freevm(p->pgdir);
@@ -321,10 +323,10 @@ waitpid(int pid, int *status, int options)
   int havekids, pid2;
   struct proc *curproc = myproc();
 
- if(options == 3){ // Placeholder for WNOHANG, if options is set to 3 we will run WNOHANG FUNCTION
+ //if(options == 3){ // Placeholder for WNOHANG, if options is set to 3 we will run WNOHANG FUNCTION
 
 
- }
+// }
 
   acquire(&ptable.lock);
   for(;;){
@@ -340,7 +342,7 @@ waitpid(int pid, int *status, int options)
         kfree(p->kstack);
         p->kstack = 0;
         freevm(p->pgdir);
-        p->pid2 = 0;
+        p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
