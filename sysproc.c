@@ -36,7 +36,8 @@ sys_waitpid(void)
    int pid;
    argint(0, &pid);
    int* status;
-   argptr(1, (char**)&status, 0);
+   if(argptr(1, (void*) &status, sizeof(*status)) < 0)
+	return -1;
    return waitpid(pid, status, 0);
 }
 

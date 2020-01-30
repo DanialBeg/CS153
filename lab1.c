@@ -1,7 +1,7 @@
 #include "types.h"
 #include "user.h"
 
-#define WNOHANG 	1
+#define WNOHANG 
 
 int exitWait(void);
 int waitPid(void);
@@ -112,7 +112,8 @@ int CELEBW02(void){
     exit(1);
   }
   else do {
-    if ((retpid = waitpid(pid, &status, WNOHANG)) == -1)
+    retpid = waitpid(pid, &status, 3);
+    if (retpid == -1)
       printf(2, "wait() error");
     else if (retpid == 0) {
       printf(1, "child is still running \n");
