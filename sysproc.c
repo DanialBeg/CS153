@@ -26,7 +26,8 @@ int
 sys_wait(void)
 {
   int* stat;
-  argptr(0, (char**)&stat, 0);
+  if(argptr(1, (void*)&stat, sizeof(*stat)) < 0)
+	return -1;
   return wait(stat);
 }
 
