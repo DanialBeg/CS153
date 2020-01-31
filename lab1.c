@@ -1,7 +1,7 @@
 #include "types.h"
 #include "user.h"
 
-#define WNOHANG 
+#define WNOHANG  1 
 
 int exitWait(void);
 int waitPid(void);

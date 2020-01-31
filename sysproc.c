@@ -26,7 +26,7 @@ int
 sys_wait(void)
 {
   int* stat;
-  if(argptr(1, (void*)&stat, sizeof(*stat)) < 0)
+  if(argptr(0, (void*)&stat, sizeof(*stat)) < 0)
 	return -1;
   return wait(stat);
 }
@@ -35,7 +35,10 @@ int
 sys_waitpid(void)
 {
    int pid;
+   //int options = 0;
    argint(0, &pid);
+   //if(argint(2, &options) < 0)
+	//return -1;
    int* status;
    if(argptr(1, (void*) &status, sizeof(*status)) < 0)
 	return -1;
