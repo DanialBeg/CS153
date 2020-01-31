@@ -288,10 +288,6 @@ wait(int *stat)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
-	if(stat){
-		*stat = p->exitStatus;
-       
-	}
 	pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
@@ -300,7 +296,12 @@ wait(int *stat)
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
-        p->state = UNUSED;
+        p->state = UNUSED;i
+
+	if(stat){
+	   *stat = p->exitStatus;
+	}
+
         release(&ptable.lock);
         return pid;
       }
@@ -347,6 +348,11 @@ waitpid(int pid, int *status, int options)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
+
+	if(status){
+		*status = p->exitStatus;
+	}
+
         release(&ptable.lock);
         return pid2;
       }
