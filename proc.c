@@ -296,7 +296,7 @@ wait(int *stat)
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
-        p->state = UNUSED;i
+        p->state = UNUSED;
 
 	if(stat){
 	   *stat = p->exitStatus;
