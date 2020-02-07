@@ -25,7 +25,9 @@ sys_exit(void)
 int
 sys_setpriority(void)
 {
-
+  int p = 31;
+  argint(0, &p);
+  return setpriority(p);
 }
 
 int

@@ -112,6 +112,8 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  p->pStatus = 10;
+
   return p;
 }
 
@@ -369,7 +371,7 @@ waitpid(int pid, int *status, int options)
   }
 }
 
-//PAGEBREAK: 42
+//PAGEBREAKi: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -383,25 +385,42 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+  struct proc *temp = ptable.proc;
+ // struct proc *minFinder = ptable.proc;
+ int min = 31;  
+
   for(;;){
+    min = 31;
     // Enable interrupts on this processor.
     sti();
-
-    // Loop over process table looking for process to run.
+    
     acquire(&ptable.lock);
+    // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+	if(min >= p->pStatus && p->state == RUNNABLE){
+	   min = p->pStatus;
+	   temp = p;
+	}
+    }
+    //acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      //for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
+        //if(min > minFinder->pStatus){
+	  // min = minFinder->pStatus;
+	//   temp = minFinder;
+      //   }
+      //}
+      if(temp->state != RUNNABLE)
         continue;
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+      c->proc = temp;
+      switchuvm(temp);
+      temp->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
+      swtch(&(c->scheduler), temp->context);
       switchkvm();
 
       // Process is done running for now.
@@ -437,6 +456,15 @@ sched(void)
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
   mycpu()->intena = intena;
+}
+
+int
+setpriority(int num)
+{
+   struct proc *p = myproc();
+   if(num >= 0 && num <= 31)
+	p->pStatus = num;
+   return num;
 }
 
 // Give up the CPU for one scheduling round.
