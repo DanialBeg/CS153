@@ -23,6 +23,12 @@ sys_exit(void)
 }
 
 int
+sys_setpriority(void)
+{
+
+}
+
+int
 sys_wait(void)
 {
   int* stat;
