@@ -17,14 +17,38 @@ int
 sys_exit(void)
 {
   int stat;
+  argint(0, &stat);
   exit(stat);
   return 0;  // not reached
 }
 
 int
+sys_setpriority(void)
+{
+
+}
+
+int
 sys_wait(void)
 {
-  return wait();
+  int* stat;
+  if(argptr(0, (void*)&stat, sizeof(*stat)) < 0)
+	return -1;
+  return wait(stat);
+}
+
+int
+sys_waitpid(void)
+{
+   int pid;
+   //int options = 0;
+   argint(0, &pid);
+   //if(argint(2, &options) < 0)
+	//return -1;
+   int* status;
+   if(argptr(1, (void*) &status, sizeof(*status)) < 0)
+	return -1;
+   return waitpid(pid, status, 0);
 }
 
 int
@@ -83,10 +107,10 @@ sys_sleep(void)
 int
 sys_uptime(void)
 {
-  uint xticks;
+   uint xticks;
 
-  acquire(&tickslock);
-  xticks = ticks;
-  release(&tickslock);
-  return xticks;
+   acquire(&tickslock);
+   xticks = ticks;
+   release(&tickslock);
+   return xticks;
 }
