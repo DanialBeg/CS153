@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
   printf(1, "\n This program tests the correctness of your lab#2\n");
   
 	PScheduler();
+       // WScheduler();
 	return 0;
  }
   
@@ -54,3 +55,17 @@ int main(int argc, char *argv[])
 }
 	exit(0);		
 	return 0;}
+
+int WScheduler(void) {
+   int pid;
+   setpriority(0);
+   
+   pid = fork();
+
+   if (pid > 0){
+      setpriority(5);
+      printf(1, "Parent process has priority 5 before waiting");
+      wait(0);
+   }
+   return 0;      
+}

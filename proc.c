@@ -283,7 +283,7 @@ wait(int *stat)
   int havekids, pid;
   struct proc *curproc = myproc();
 
-  p->pStatus -= 1; //Gives us 32 prioity spots which gives us a good range of felxiblity
+ // p->pStatus -= 1; //Gives us 32 prioity spots which gives us a good range of felxiblity
   
   acquire(&ptable.lock);
   for(;;){
@@ -295,6 +295,9 @@ wait(int *stat)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
+
+	p->pStatus -= 1; // Moved down here for when a wait process is found
+
 	pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
