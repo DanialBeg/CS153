@@ -230,7 +230,7 @@ exit(int stat)
   struct proc *curproc = myproc();
   struct proc *p;
   int fd;
-
+  
   if(curproc == initproc)
     panic("init exiting");
 
@@ -260,8 +260,11 @@ exit(int stat)
         wakeup1(initproc);
     }
   }
-
+  
   curproc->exitStatus = stat;
+
+  //Setting priority to maximum so that it will have the lowest priority after exiting a said function
+  p->pStatus = 31;
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -277,6 +280,8 @@ wait(int *stat)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
+
+  p->pStatus -= 1; //Gives us 32 prioity spots which gives us a good range of felxiblity
   
   acquire(&ptable.lock);
   for(;;){
