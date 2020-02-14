@@ -393,10 +393,11 @@ void
 scheduler(void)
 {
   struct proc *p;
+  //struct proc *p1;
   struct cpu *c = mycpu();
   c->proc = 0;
   struct proc *temp = ptable.proc;
- // struct proc *minFinder = ptable.proc;
+ // struct proc *minFinder;
  int min = 31;  
 
   for(;;){
@@ -406,28 +407,40 @@ scheduler(void)
     
     acquire(&ptable.lock);
 
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        if (p->pStatus > 5) 
-	   p->pStatus = p->pStatus - 5;
-	else
-	   p->pStatus  = 0;
-    }
+    //for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        //if (p->pStatus >= 5) 
+	   //p->pStatus = p->pStatus - 5;
+	//else
+	   //p->pStatus  = 0;
+    //}
 
     // Loop over process table looking for process to run.
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-	if(min >= p->pStatus && p->state == RUNNABLE){
-	   min = p->pStatus;
-	   temp = p;
-	}
-    }
+    //for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+	//if(min >= p->pStatus && p->state == RUNNABLE){
+	  // min = p->pStatus;
+	  // temp = p;
+	//}
+    //}
     //acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      //for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
-        //if(min > minFinder->pStatus){
-	  // min = minFinder->pStatus;
-	//   temp = minFinder;
-      //   }
-      //}
+      if(p->state != RUNNABLE)
+	continue;
+      
+      struct proc *minFinder;
+      for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++) {
+        if (minFinder->pStatus >= 1)
+           minFinder->pStatus -= 1;
+        else if (minFinder->pStatus <= 0) 
+           minFinder->pStatus  = 0;
+      }
+
+      for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
+        if(min >= minFinder->pStatus && minFinder->state == RUNNABLE){
+	   min = minFinder->pStatus;
+	   temp = minFinder;
+         }
+      }
+      
       if(temp->state != RUNNABLE)
         continue;
 
@@ -441,10 +454,10 @@ scheduler(void)
       swtch(&(c->scheduler), temp->context);
       switchkvm();
       
-      if(p->pStatus <= 26)
-	p->pStatus += 5;
-      else
-	p->pStatus = 31;
+      if(minFinder->pStatus <= 21)
+	temp->pStatus += 2;
+      else if (minFinder->pStatus > 21)
+	temp->pStatus = 2;
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
