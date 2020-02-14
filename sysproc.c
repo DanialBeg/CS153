@@ -70,6 +70,12 @@ sys_getpid(void)
 }
 
 int
+sys_getpstat(void)
+{
+   return myproc()->pStatus;
+}
+
+int
 sys_sbrk(void)
 {
   int addr;

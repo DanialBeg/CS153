@@ -266,7 +266,7 @@ exit(int stat)
   curproc->exitStatus = stat;
 
   //Setting priority to maximum so that it will have the lowest priority after exiting a said function
-  p->pStatus = 31;
+  //p->pStatus = 31;
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -295,8 +295,10 @@ wait(int *stat)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
-
-	p->pStatus -= 1; // Moved down here for when a wait process is found
+       // if(p->pStatus > 10)
+	//   p->pStatus -= 10; // Moved down here for when a wait process is found
+        //else
+	  // p->pStatus = 0;
 
 	pid = p->pid;
         kfree(p->kstack);
@@ -403,6 +405,14 @@ scheduler(void)
     sti();
     
     acquire(&ptable.lock);
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->pStatus > 5) 
+	   p->pStatus = p->pStatus - 5;
+	else
+	   p->pStatus  = 0;
+    }
+
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 	if(min >= p->pStatus && p->state == RUNNABLE){
@@ -430,6 +440,11 @@ scheduler(void)
 
       swtch(&(c->scheduler), temp->context);
       switchkvm();
+      
+      if(p->pStatus <= 26)
+	p->pStatus += 5;
+      else
+	p->pStatus = 31;
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.

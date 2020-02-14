@@ -5,11 +5,11 @@ int main(int argc, char *argv[])
 {
 	
 	int PScheduler(void);
-
+        int WScheduler(void);
   printf(1, "\n This program tests the correctness of your lab#2\n");
   
 	PScheduler();
-       // WScheduler();
+        //WScheduler();
 	return 0;
  }
   
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 		for (j=0;j<50000;j++) {
 			for(k=0;k<1000;k++) {
 				asm("nop"); }}
-		printf(1, "\n child# %d with priority %d has finished! \n",getpid(),30-10*i);		
+		printf(1, "\n child# %d with priority %d has finished with priority %d! \n",getpid(),30-10*i, getpstat());		
 		exit(0);
         }
         else {
@@ -58,14 +58,41 @@ int main(int argc, char *argv[])
 
 int WScheduler(void) {
    int pid;
-   setpriority(0);
-   
+   int pid2;
+   //setpriority(0);
+ 
    pid = fork();
+   pid2 = fork();
 
    if (pid > 0){
-      setpriority(5);
-      printf(1, "Parent process has priority 5 before waiting");
+      setpriority(25);
+      printf(1, "\n Parent process has priority %d before waiting \n", getpstat());
       wait(0);
+      printf(1, "\n We are done waiting and will now exit the parent with priority %d.\n", getpstat());
+      exit(0);
    }
+   else if(pid == 0){
+      setpriority(15);
+      printf(1, "\n The child process has priority %d before waiting \n", getpstat());
+      wait(0);
+      printf(1, "\n We are now done waiting and will exit the child process with priority %d \n", getpstat());
+      exit(0);
+   }
+   
+   else if (pid2 > 0){
+      setpriority(7);
+      printf(1, "\n Parent process has priority %d before waiting \n", getpstat());
+      wait(0);
+      printf(1, "\n We are done waiting and will now exit the parent with priority %d.\n", getpstat());
+      exit(0);
+   }
+   else if (pid2 == 0){
+      setpriority(14);
+      printf(1, "\n The child process has priority %d before waiting \n", getpstat());
+      wait(0);
+      printf(1, "\n We are now done waiting and will exit the child process with priority %d \n", getpstat());
+      exit(0);
+   }
+
    return 0;      
 }
