@@ -6,6 +6,9 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+//#include "user.h"
+
+//#include <cstdio>
 
 struct {
   struct spinlock lock;
@@ -422,27 +425,45 @@ scheduler(void)
 	//}
     //}
     //acquire(&ptable.lock);
+
+    struct proc *minFinder;
+    for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++) {
+      if (minFinder->pStatus >= 1)
+         minFinder->pStatus -= 1;
+      else if (minFinder->pStatus <= 0)
+         minFinder->pStatus  = 0;
+    }
+
+    for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
+        if(min >= minFinder->pStatus && minFinder->state == RUNNABLE){
+           min = minFinder->pStatus;
+           temp = minFinder;
+         }
+      }
+
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
 	continue;
       
-      struct proc *minFinder;
-      for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++) {
-        if (minFinder->pStatus >= 1)
-           minFinder->pStatus -= 1;
-        else if (minFinder->pStatus <= 0) 
-           minFinder->pStatus  = 0;
-      }
+      //struct proc *minFinder;
+      //for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++) {
+        //if (minFinder->pStatus >= 1)
+          // minFinder->pStatus -= 1;
+        //else if (minFinder->pStatus <= 0) 
+          // minFinder->pStatus  = 0;
+      //}
 
-      for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
-        if(min >= minFinder->pStatus && minFinder->state == RUNNABLE){
-	   min = minFinder->pStatus;
-	   temp = minFinder;
-         }
-      }
+      //for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
+        //if(min >= minFinder->pStatus && minFinder->state == RUNNABLE){
+	   //min = minFinder->pStatus;
+	   //temp = minFinder;
+         //}
+      //} 
       
       if(temp->state != RUNNABLE)
         continue;
+      
+      cprintf("\n Process with pid %d has priority %d after waiting \n", temp->pid, temp->pStatus);
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
