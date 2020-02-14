@@ -25,7 +25,9 @@ sys_exit(void)
 int
 sys_setpriority(void)
 {
-
+  int p = 31;
+  argint(0, &p);
+  return setpriority(p);
 }
 
 int
@@ -65,6 +67,12 @@ int
 sys_getpid(void)
 {
   return myproc()->pid;
+}
+
+int
+sys_getpstat(void)
+{
+   return myproc()->pStatus;
 }
 
 int

@@ -6,6 +6,9 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+//#include "user.h"
+
+//#include <cstdio>
 
 struct {
   struct spinlock lock;
@@ -111,6 +114,8 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+
+  p->pStatus = 10;
 
   return p;
 }
@@ -264,7 +269,7 @@ exit(int stat)
   curproc->exitStatus = stat;
 
   //Setting priority to maximum so that it will have the lowest priority after exiting a said function
-  p->pStatus = 31;
+  //p->pStatus = 31;
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -281,7 +286,7 @@ wait(int *stat)
   int havekids, pid;
   struct proc *curproc = myproc();
 
-  p->pStatus -= 1; //Gives us 32 prioity spots which gives us a good range of felxiblity
+ // p->pStatus -= 1; //Gives us 32 prioity spots which gives us a good range of felxiblity
   
   acquire(&ptable.lock);
   for(;;){
@@ -293,6 +298,11 @@ wait(int *stat)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
+       // if(p->pStatus > 10)
+	//   p->pStatus -= 10; // Moved down here for when a wait process is found
+        //else
+	  // p->pStatus = 0;
+
 	pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
@@ -374,7 +384,7 @@ waitpid(int pid, int *status, int options)
   }
 }
 
-//PAGEBREAK: 42
+//PAGEBREAKi: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -386,28 +396,89 @@ void
 scheduler(void)
 {
   struct proc *p;
+  //struct proc *p1;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+  struct proc *temp = ptable.proc;
+ // struct proc *minFinder;
+ int min = 31;  
+
   for(;;){
+    min = 31;
     // Enable interrupts on this processor.
     sti();
+    
+    acquire(&ptable.lock);
+
+    //for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        //if (p->pStatus >= 5) 
+	   //p->pStatus = p->pStatus - 5;
+	//else
+	   //p->pStatus  = 0;
+    //}
 
     // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
+    //for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+	//if(min >= p->pStatus && p->state == RUNNABLE){
+	  // min = p->pStatus;
+	  // temp = p;
+	//}
+    //}
+    //acquire(&ptable.lock);
+
+    struct proc *minFinder;
+    for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++) {
+      if (minFinder->pStatus >= 1)
+         minFinder->pStatus -= 1;
+      else if (minFinder->pStatus <= 0)
+         minFinder->pStatus  = 0;
+    }
+
+    for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
+        if(min >= minFinder->pStatus && minFinder->state == RUNNABLE){
+           min = minFinder->pStatus;
+           temp = minFinder;
+         }
+      }
+
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
+	continue;
+      
+      //struct proc *minFinder;
+      //for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++) {
+        //if (minFinder->pStatus >= 1)
+          // minFinder->pStatus -= 1;
+        //else if (minFinder->pStatus <= 0) 
+          // minFinder->pStatus  = 0;
+      //}
+
+      //for(minFinder = ptable.proc; minFinder < &ptable.proc[NPROC]; minFinder++){
+        //if(min >= minFinder->pStatus && minFinder->state == RUNNABLE){
+	   //min = minFinder->pStatus;
+	   //temp = minFinder;
+         //}
+      //} 
+      
+      if(temp->state != RUNNABLE)
         continue;
+      
+      cprintf("\n Process with pid %d has priority %d after waiting \n", temp->pid, temp->pStatus);
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+      c->proc = temp;
+      switchuvm(temp);
+      temp->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
+      swtch(&(c->scheduler), temp->context);
       switchkvm();
+      
+      if(minFinder->pStatus <= 21)
+	temp->pStatus += 2;
+      else if (minFinder->pStatus > 21)
+	temp->pStatus = 2;
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
@@ -442,6 +513,15 @@ sched(void)
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
   mycpu()->intena = intena;
+}
+
+int
+setpriority(int num)
+{
+   struct proc *p = myproc();
+   if(num >= 0 && num <= 31)
+	p->pStatus = num;
+   return num;
 }
 
 // Give up the CPU for one scheduling round.
